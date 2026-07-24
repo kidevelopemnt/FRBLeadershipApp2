@@ -5,7 +5,7 @@ import uuid
 from datetime import datetime
 
 
-DATABASE = "database.db"
+DATABASE = "D:\Coding\FRBLeadershipApp\database.db"
 
 
 class Database:

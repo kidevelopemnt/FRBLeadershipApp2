@@ -30,6 +30,9 @@ class Router:
         else:
             raise ValueError("Invalid view name, {}".format(name))
 
+        self.draw_navbar()
+
+    def draw_navbar(self):
         self.page.add(self.navbar)
 
     def navbar_change(self, e):

@@ -45,6 +45,7 @@ class Event(Model):
         "created_by": User,      # User
         "tags": [Tag],              # List[Tag]   0 means ALL
         "mandatory": True,
+        "attendance_locked": False,
     }
 
     @property

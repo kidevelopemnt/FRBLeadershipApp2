@@ -12,7 +12,7 @@ def main(page: ft.Page):
     page.theme_mode = ft.ThemeMode.LIGHT
     page.padding = 0
 
-    current_user = None  # Replace with login later
+    current_user = User.objects.all()[0]  # Replace with login later
 
     router = Router(page)
 

@@ -230,3 +230,4 @@ class CalendarView(ft.Column):
                 event
             )
         )
+        self.router.draw_navbar()

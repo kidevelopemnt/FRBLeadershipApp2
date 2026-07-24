@@ -41,20 +41,30 @@ class EventView(ft.Column):
         }
 
         self.controls.append(
-            ft.Text(
-                self.event.name,
-                size=30,
-                weight=ft.FontWeight.BOLD,
-                text_align=ft.TextAlign.CENTER
+            ft.Row(
+                alignment=ft.MainAxisAlignment.CENTER,
+                controls=[
+                    ft.Text(
+                        self.event.name,
+                        size=30,
+                        weight=ft.FontWeight.BOLD,
+                        text_align=ft.TextAlign.CENTER
+                    )
+                ]
             )
         )
 
         self.controls.append(
-            ft.Text(
-                f"{self.event.start_dt.strftime(DT_FORMAT)} {self.event.end_dt.strftime(DT_FORMAT)}",
-                size=30,
-                weight=ft.FontWeight.BOLD,
-                text_align=ft.TextAlign.CENTER
+            ft.Row(
+                alignment=ft.MainAxisAlignment.CENTER,
+                controls=[
+                    ft.Text(
+                        f"{self.event.start_dt.strftime(DT_FORMAT)} - {self.event.end_dt.strftime(DT_FORMAT)}",
+                        size=30,
+                        weight=ft.FontWeight.BOLD,
+                        text_align=ft.TextAlign.CENTER
+                    )
+                ]
             )
         )
 
@@ -63,21 +73,25 @@ class EventView(ft.Column):
             ft.Row(
                 alignment=ft.MainAxisAlignment.CENTER,
                 controls=[
-                    ft.FloatingActionButton(
+                    ft.FilledButton(
                         icon=ft.Icons.CHECK,
-                        # text="Mark All Present",
-                        on_click=self.mark_all_present
+                        content="Mark All Present",
+                        on_click=self.mark_all_present,
+                        bgcolor="green"
                     ),
 
-                    ft.FloatingActionButton(
+                    ft.FilledButton(
                         icon=ft.Icons.CLOSE,
-                        # text="Mark All Absent",
-                        on_click=self.mark_all_absent
+                        content="Mark All Absent",
+                        on_click=self.mark_all_absent,
+                        bgcolor="red"
                     ),
 
-                    ft.FloatingActionButton(
+                    ft.FilledButton(
                         icon=ft.Icons.DELETE,
-                        on_click=self.mark_all_not_recorded
+                        content="Remove All Attendance",
+                        on_click=self.mark_all_not_recorded,
+                        bgcolor="grey"
                     )
                 ]
             )
@@ -187,6 +201,7 @@ class EventView(ft.Column):
 
         return ft.Row(
             wrap=True,
+            alignment=ft.MainAxisAlignment.CENTER,
             controls=[
                 ft.Chip(
                     label=ft.Text(tag.name),
