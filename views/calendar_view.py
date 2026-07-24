@@ -8,9 +8,9 @@ from models import Event
 
 class CalendarView(ft.Column):
 
-    def __init__(self, page, user):
-
+    def __init__(self, page, router, user):
         self.app_page = page
+        self.router = router
         self.user = user
 
         self.current_date = datetime.now()
@@ -26,7 +26,8 @@ class CalendarView(ft.Column):
 
         self.build()
 
-
+    def on_load(self):
+        self.render_calendar()
 
     def build(self, render=False):
         self.controls.clear()
@@ -45,7 +46,6 @@ class CalendarView(ft.Column):
 
 
     def header(self):
-
         return ft.Row(
             alignment=ft.MainAxisAlignment.CENTER,
             controls=[

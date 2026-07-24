@@ -1,7 +1,10 @@
 import flet as ft
+
 from models import User, Event, Tag, AttendanceRecord, AbsenceRequest
+from router import Router
 
 from views.calendar_view import CalendarView
+from views.dashboard_view import DashboardView
 
 
 def main(page: ft.Page):
@@ -11,16 +14,14 @@ def main(page: ft.Page):
 
     current_user = None  # Replace with login later
 
-    calendar = CalendarView(
-        page,
-        current_user
-    )
+    router = Router(page)
 
-    page.add(
-        calendar
-    )
+    dashboard = DashboardView(page, router, current_user)
+    calendar = CalendarView(page, router, current_user)
 
-    calendar.render_calendar()
+    router.register_view("dashboard", dashboard)
+    router.register_view("calendar", calendar)
 
+    router.load_view("dashboard")
 
 ft.run(main)
