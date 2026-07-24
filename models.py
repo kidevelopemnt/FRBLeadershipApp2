@@ -42,7 +42,7 @@ class Event(Model):
         "_start_dt": None,       # datetime
         "_end_dt": None,         # datetime
         "notes": "",
-        "created_by": None,      # User
+        "created_by": User,      # User
         "tags": [Tag],              # List[Tag]   0 means ALL
         "mandatory": True,
     }
@@ -78,9 +78,9 @@ class AttendanceRecord(Model):
     ]
 
     fields = {
-        "user": None,              # User
-        "event": None,               # Event
-        "recorded_by": None,         # User
+        "user": User,              # User
+        "event": Event,               # Event
+        "recorded_by": User,         # User
         "recorded_at": None,         # datetime
         "status": STATUS_PRESENT,
         "notes": "",
@@ -106,21 +106,21 @@ class AbsenceRequest(Model):
     ]
 
     fields = {
-        "user": None,              # User
+        "user": User,              # User
 
         # Either this...
-        "event": None,               # Event
+        "event": Event,               # Event
 
         # ...or these
         "start_dt": None,            # datetime
         "end_dt": None,              # datetime
 
-        "recorded_by": None,         # User
+        "recorded_by": User,         # User
         "recorded_at": None,         # datetime
 
         "notes": "",
 
-        "reviewed_by": None,         # User
+        "reviewed_by": User,         # User
         "reviewed_at": None,         # datetime
 
         "approval_status": STATUS_PENDING,

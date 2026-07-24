@@ -1,5 +1,6 @@
 import flet as ft
 
+from db_system import Database
 from models import User, AttendanceRecord, Tag
 from settings import DT_FORMAT
 
@@ -30,8 +31,9 @@ class EventView(ft.Column):
 
     def build(self):
         self.controls.clear()
+        self.cards.clear()
 
-        self.attendance_cache = {
+        self.attendance_records = {
             record.user.id: record
             for record in AttendanceRecord.objects.filter(
                 event=self.event
@@ -71,6 +73,11 @@ class EventView(ft.Column):
                         icon=ft.Icons.CLOSE,
                         # text="Mark All Absent",
                         on_click=self.mark_all_absent
+                    ),
+
+                    ft.FloatingActionButton(
+                        icon=ft.Icons.DELETE,
+                        on_click=self.mark_all_not_recorded
                     )
                 ]
             )
@@ -131,23 +138,19 @@ class EventView(ft.Column):
 
                 content=ft.Container(
                     padding=15,
-
                     on_click=lambda e:
                         self.cycle_status(
                             user,
                             dropdown
                         ),
-
                     content=ft.Column(
                         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-
                         controls=[
                             ft.Text(
                                 user.name,
                                 size=18,
                                 weight=ft.FontWeight.BOLD
                             ),
-
                             ft.Row(
                                 wrap=True,
                                 alignment= ft.MainAxisAlignment.CENTER,
@@ -160,22 +163,18 @@ class EventView(ft.Column):
                                     for tag in user.tags
                                 ]
                             ),
-
                             ft.Divider(),
-
                             ft.Text(
                                 status,
                                 size=20,
                                 weight=ft.FontWeight.BOLD
                             ),
-
                             dropdown
                         ]
                     )
                 )
             )
         )
-
 
         self.cards.append(
             (user, card, dropdown, status)
@@ -213,11 +212,10 @@ class EventView(ft.Column):
     def update_card(self, user, status):
         for card in self.cards:
             if card[0].id == user.id:
-                card[3].value = status
-                card[1].bgcolor = (
-                    self.status_color(status)
-                )
-                card[3].update()
+                card[2].value = status
+                card[1].content.bgcolor = self.status_color(status)
+
+                card[2].update()
                 card[1].update()
 
                 break
@@ -242,7 +240,7 @@ class EventView(ft.Column):
         return filtered
 
     def get_status(self, user):
-        record = self.attendance_cache.get(
+        record = self.attendance_records.get(
             user.id
         )
 
@@ -273,53 +271,32 @@ class EventView(ft.Column):
 
         dropdown.update()
 
-    def change_status(
-        self,
-        user,
-        status
-    ):
-
-        records = AttendanceRecord.objects.filter(
-            user=user,
-            event=self.event
-        )
-
+    def change_status(self, user, status, refresh=True):
+        record = self.attendance_records.get(user.id)
 
         if status == "Not Recorded":
-
-            if records:
-                records[0].delete()
+            if record:
+                record.delete()
 
             return
 
-        if records:
-
-            record = records[0]
-
+        if record:
             record.status = status
 
         else:
-
             record = AttendanceRecord(
-
                 user=user,
-
                 event=self.event,
-
                 recorded_by=self.user,
-
                 status=status
-
             )
-
 
         record.save()
 
-        self.update_card(user, status)
-
+        if refresh:
+            self.update_card(user, status)
 
     def mark_all_present(self, e):
-
         self.mark_all(
             "Present"
         )
@@ -330,10 +307,42 @@ class EventView(ft.Column):
             "Absent"
         )
 
+    def mark_all_not_recorded(self, e):
+        self.mark_all("Not Recorded")
 
     def mark_all(self, status):
-        for user in User.objects.all():
+        if status == "Not Recorded":
+            Database.execute(
+                """
+                DELETE FROM attendancerecord
+                WHERE event=?
+                """,
+                (self.event.id,)
+            )
+
+            self.attendance_records.clear()
+
+            for user, _, _, _ in self.cards:
+                self.update_card(
+                    user,
+                    "Not Recorded"
+                )
+
+            return
+
+        Database.begin()
+
+        for user, _, _, _ in self.cards:
             self.change_status(
+                user,
+                status,
+                refresh=False
+            )
+
+        Database.commit()
+
+        for user, _, _, _ in self.cards:
+            self.update_card(
                 user,
                 status
             )

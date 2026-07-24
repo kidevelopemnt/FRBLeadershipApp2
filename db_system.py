@@ -14,13 +14,18 @@ class Database:
         check_same_thread=False
     )
 
+    in_transaction = False
+
     connection.row_factory = sqlite3.Row
 
     @classmethod
-    def execute(cls, query, params=()):
+    def execute(cls, query, params=(), commit=True):
         cursor = cls.connection.cursor()
         cursor.execute(query, params)
-        cls.connection.commit()
+
+        if commit:
+            cls.connection.commit()
+
         return cursor
 
     @classmethod
@@ -32,6 +37,16 @@ class Database:
     def fetchone(cls, query, params=()):
         cursor = cls.execute(query, params)
         return cursor.fetchone()
+
+    @classmethod
+    def begin(cls):
+        cls.in_transaction = True
+        cls.connection.execute("BEGIN TRANSACTION")
+
+    @classmethod
+    def commit(cls):
+        cls.in_transaction = False
+        cls.connection.commit()
 
 
 class Model:
@@ -70,7 +85,7 @@ class Model:
             if isinstance(default, type) and issubclass(default, Model):
                 value = kwargs.get(field)
 
-                if value is not None and not isinstance(value, Model):
+                if value is not None and value != "" and not isinstance(value, Model):
                     value = default.objects.get(
                         id=value
                     )
@@ -154,7 +169,8 @@ class Model:
 
         Database.execute(
             query,
-            values
+            values,
+            commit=not Database.in_transaction
         )
 
     @classmethod
