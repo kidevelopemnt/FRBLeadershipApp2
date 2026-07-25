@@ -119,6 +119,7 @@ class AbsenceRequest(Model):
         "recorded_by": User,         # User
         "recorded_at": None,         # datetime
 
+        "absence_type": "",
         "notes": "",
 
         "reviewed_by": User,         # User

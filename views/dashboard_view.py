@@ -2,7 +2,7 @@ from datetime import datetime
 
 import flet as ft
 
-from models import Event
+from models import Event, AbsenceRequest, User
 from settings import DT_FORMAT, DATE_FORMAT
 
 
@@ -70,6 +70,8 @@ class DashboardView(ft.Column):
             ],
             visible=False
         )
+
+        self.notes_ipt = ft.TextField(label="Notes", hint_text="e.x. Notes", expand=True, multiline=True)
 
         ## Add controls to screen
 
@@ -170,6 +172,11 @@ class DashboardView(ft.Column):
                                             ),
 
                                             ft.Row(
+                                                expand=True,
+                                                controls=[self.notes_ipt]
+                                            ),
+
+                                            ft.Row(
                                                 margin=ft.Margin(top=15),
                                                 expand=True,
                                                 controls=[
@@ -210,6 +217,19 @@ class DashboardView(ft.Column):
                 self.event_dropdown.visible = False
                 self.date_range_btn.visible = False
 
+    def reset_form(self):
+        self.student_name_ipt.value = ""
+        self.reason_ipt.value = ""
+        self.absence_type_radio_group.value = ""
+        self.absence_duration_radio_group.value = ""
+        self.event_dropdown.value = ""
+        self.date_range_picker.start_value = None
+        self.date_range_picker.end_value = None
+        self.notes_ipt.value = ""
+
+        self.event_dropdown.visible = False
+        self.date_range_btn.visible = False
+
     def submit_absence_request(self):
         student_name = self.student_name_ipt.value
         reason = self.reason_ipt.value
@@ -218,10 +238,25 @@ class DashboardView(ft.Column):
         event_id = self.event_dropdown.value
         duration_start = self.date_range_picker.start_value
         duration_end = self.date_range_picker.end_value
+        notes = self.notes_ipt.value
 
-        print("##### ABSENCE REQUEST #####")
-        print(f"Student Name: {student_name}")
-        print(f"Reason: {reason}")
-        print(f"Absence Type: {absence_type}")
-        print(f"Absence Duration: {absence_duration_type}")
-        print(event_id, duration_start, duration_end)
+        request = AbsenceRequest(
+            user=User.objects.get_or_create(name=student_name, defaults={
+                "username": student_name.replace(" ", ""),
+                "name": "?" + student_name + "?",
+            })[0],  # TODO: Figure out what to do: Potentially a searchable dropdown to prevent non-existent student names
+            recorded_by=self.user,
+            recorded_at=datetime.now(),
+            absence_type=absence_type,
+            notes=notes
+        )
+        match absence_duration_type:
+            case "time":
+                request.start_dt = duration_start
+                request.end_dt = duration_end
+            case "event":
+                request.event = Event.objects.get(id=event_id)
+
+        request.save()
+
+        self.reset_form()

@@ -5,7 +5,8 @@ import uuid
 from datetime import datetime
 
 
-DATABASE = "D:\Coding\FRBLeadershipApp\database.db"
+# DATABASE = "D:\\Coding\\FRBLeadershipApp\\database.db"
+DATABASE = "C:\\Users\\mike\\OneDrive\\Email attachments\\Desktop\\Braden\\Coding\\FRBLeadershipApp2\\database.db"
 
 
 class Database:
@@ -86,6 +87,7 @@ class Model:
                 value = kwargs.get(field)
 
                 if value is not None and value != "" and not isinstance(value, Model):
+                    print(default, value)
                     value = default.objects.get(
                         id=value
                     )
